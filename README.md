@@ -3,60 +3,58 @@
 **How to Go Digital in American Literary Studies**
 十九世紀アメリカ文学を少しだけデジタルに読むための授業用アプリ
 
-A lightweight, browser-based text analysis tool for literary studies courses. No installation, no coding, no server required — just open the URL and start analyzing.
+A lightweight, browser-based text analysis tool for introductory digital humanities courses. No installation, no coding, no server required — students open the URL and start analyzing immediately.
 
 ---
 
 ## Features / 機能
 
-- **頻出語分析 / Word Frequency** — ストップワード除去あり
-- **KWIC (Key Word in Context)** — 語の前後文脈を一覧表示
-- **分布グラフ / Distribution** — テキスト全体を20区間に分けて出現位置を可視化
-- **実験メモ / Experiment Memo** — 分析結果をGoogle Classroomにコピペ提出
+- **頻出語分析 / Word Frequency** — ストップワード除去あり / with stopword removal
+- **KWIC (Key Word in Context)** — 語の前後文脈を一覧表示 / concordance view
+- **分布グラフ / Distribution** — テキスト全体を20区間に分けて出現位置を可視化 / word occurrence across 20 segments
 
 ---
 
 ## Deploy to GitHub Pages / デプロイ方法
 
-1. このリポジトリを GitHub で Fork またはクローン
-2. Settings → Pages → Branch: `main` → `/root` → Save
-3. 数分後に `https://<your-username>.github.io/<repo-name>/` が公開される
-4. そのURLをGoogle ClassroomのMaterialとして貼り付ける
+1. このリポジトリを Fork する / Fork this repository
+2. **Settings → Pages → Branch: `main` → `/root` → Save**
+3. 数分後に公開される / Published at:
+   `https://<your-username>.github.io/<repo-name>/`
 
 ---
 
 ## Add Texts / テキストを追加する
 
-`index.html` 内の `PRESET_TEXTS` 配列を編集してください。
+`texts.js` の各エントリの `text:` フィールドに本文を貼り付けてください。
 
 ```javascript
+// texts.js
 {
-  id: 'week02',
-  week: 2,
-  title: 'Somnambulism: A Fragment',
-  author: 'Charles Brockden Brown',
-  suggestedKeywords: ['sleep', 'dream', 'walk', 'eye', 'night', 'darkness'],
-  coreQuestion: {
-    ja: '夢遊と意識の揺らぎは語彙レベルでどう現れるか',
-    en: 'How does the instability of sleepwalking and consciousness appear at the level of vocabulary?'
-  },
-  text: 'PASTE FULL TEXT HERE'  // ← Project Gutenberg からコピーして貼り付ける
+  id: 'week05',
+  title: 'The Devil and Tom Walker',
+  author: 'Washington Irving',
+  text: 'PASTE FULL TEXT HERE'  // ← ここに本文を貼り付ける
 }
 ```
 
-テキストは [Project Gutenberg](https://www.gutenberg.org/) からコピーできます。
+Public domain texts are available from [Project Gutenberg](https://www.gutenberg.org/) and [Wikisource](https://en.wikisource.org/).
 
 ---
 
-## Course / 授業情報
+## Text Sources / テキスト出典
 
-- Texas A&M University
-- 19th-Century American Literature + Digital Humanities
-- 全12回 / 12-week course
+| Week | Title | Author | Source |
+|:-----|:------|:-------|:-------|
+| 2 | Somnambulism: A Fragment | Charles Brockden Brown | Library of America |
+| 3 | Peter Rugg, the Missing Man | William Austin | Wikisource |
+| 4 | The End of the World: A Vision | James Kirke Paulding | Public domain |
+
+All texts are in the public domain.
 
 ---
 
 ## License
 
-App code: MIT
-Text content: Public domain (Project Gutenberg)
+- App code: [MIT License](LICENSE)
+- Text content: Public domain
