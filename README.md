@@ -38,8 +38,6 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
 }
 ```
 
-Public domain texts are available from [Project Gutenberg](https://www.gutenberg.org/) and [Wikisource](https://en.wikisource.org/).
-
 ---
 
 ## License
