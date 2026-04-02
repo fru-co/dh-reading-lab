@@ -42,19 +42,6 @@ Public domain texts are available from [Project Gutenberg](https://www.gutenberg
 
 ---
 
-## Text Sources / テキスト出典
-
-| Week | Title | Author | Source |
-|:-----|:------|:-------|:-------|
-| 2 | Somnambulism: A Fragment | Charles Brockden Brown | Library of America |
-| 3 | Peter Rugg, the Missing Man | William Austin | Wikisource |
-| 4 | The End of the World: A Vision | James Kirke Paulding | Public domain |
-
-All texts are in the public domain.
-
----
-
 ## License
 
 - App code: [MIT License](LICENSE)
-- Text content: Public domain
