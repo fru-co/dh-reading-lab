@@ -322,6 +322,50 @@
         border: 1px solid var(--border);
       }
 
+      .stopword-panel {
+        margin-bottom: 14px;
+        background: #f9fbfc;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 14px 16px;
+      }
+
+      .stopword-panel summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: var(--primary-deep);
+      }
+
+      .stopword-panel[open] summary {
+        margin-bottom: 12px;
+      }
+
+      .stopword-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .stopword-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 10px;
+        align-items: end;
+      }
+
+      .stopword-row button {
+        white-space: nowrap;
+      }
+
+      .stopword-textarea {
+        min-height: 120px;
+      }
+
+      .note-inline {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
       .results {
         min-height: 140px;
       }
@@ -453,6 +497,10 @@
           border-radius: 14px;
         }
 
+        .stopword-row {
+          grid-template-columns: 1fr;
+        }
+
         .kwic-left, .kwic-right {
           font-size: 0.78rem;
         }
@@ -524,7 +572,7 @@
                 <h3>分析ツール / Tools</h3>
                 <ul>
                   <li><strong>頻出語</strong>: よく出る語を数える</li>
-                  <li><strong>KWIC</strong>: 語の前後の文脈を見る</li>
+                  <li><strong>KWIC (Key Word in Context)</strong>: 語の前後の文脈を見る</li>
                   <li><strong>分布</strong>: 語がどこに現れるか見る</li>
                 </ul>
               </div>
@@ -552,7 +600,7 @@
 
           <div class="tabs">
             <button class="tab active" data-tab="freq">頻出語 / Frequent Words</button>
-            <button class="tab" data-tab="kwic">文脈 / KWIC</button>
+            <button class="tab" data-tab="kwic">文脈 / KWIC View</button>
             <button class="tab" data-tab="dist">分布 / Distribution</button>
           </div>
 
@@ -572,6 +620,33 @@
                 </select>
               </label>
             </div>
+            <details class="stopword-panel">
+              <summary>stop words を設定する / Customize Stopwords</summary>
+              <div class="stopword-grid">
+                <div>
+                  <label for="stopword-preset">サンプル / Sample Lists</label>
+                  <div class="stopword-row">
+                    <select id="stopword-preset">
+                      <option value="course">授業用標準 / Course Default</option>
+                      <option value="core">基本英語 / Core English</option>
+                      <option value="literary">19世紀文学 / 19th-Century Literary</option>
+                    </select>
+                    <button id="btn-load-stopword-preset" type="button" class="btn-secondary">読み込む / Load</button>
+                    <button id="btn-clear-stopwords" type="button" class="btn-secondary">空にする / Clear</button>
+                  </div>
+                </div>
+                <div>
+                  <label for="stopword-input">自分の stop words / Custom Stopwords</label>
+                  <textarea
+                    id="stopword-input"
+                    class="stopword-textarea"
+                    placeholder="the, and, of ... または改行区切りで入力 / Enter comma- or line-separated stopwords"
+                  ></textarea>
+                </div>
+                <p class="note-inline">カンマ・スペース・改行区切りで入力できます。サンプルを読み込んでから、必要な語だけ残す使い方を想定しています。</p>
+              </div>
+            </details>
+            <p id="stopword-summary" class="footnote"></p>
             <div id="freq-results" class="results"></div>
           </div>
 
@@ -590,6 +665,7 @@
                 </select>
               </label>
             </div>
+            <p class="footnote" style="margin-top:0;">KWIC = Key Word in Context. 検索した語が前後の文脈の中でどう現れるかを一覧で見ます。</p>
             <p style="font-size:0.82rem;color:var(--muted);margin:0 0 10px;">おすすめ検索語をクリックすると自動入力されます / Click a keyword chip to auto-fill</p>
             <div id="kwic-results" class="results"></div>
           </div>
@@ -613,7 +689,19 @@
       // ============================================================
       // STOPWORDS
       // ============================================================
-      const STOPWORDS = new Set([
+      const CORE_STOPWORDS = [
+        'the','and','of','to','in','that','is','was','he','for','it','with','as',
+        'his','on','be','at','by','this','had','not','are','but','from','or','have',
+        'they','which','one','you','were','her','all','she','there','would','their',
+        'we','him','been','has','when','who','will','no','more','if','out','so','up',
+        'what','than','into','them','can','only','other','some','could','then','do',
+        'first','any','my','now','such','like','our','over','me','after','did',
+        'before','through','where','your','should','because','each','just','those',
+        'how','too','here','between','both','being','while','might','us','upon',
+        'against','does','yet','though','am'
+      ];
+
+      const COURSE_STOPWORDS = [
         'the','and','of','to','a','in','that','is','was','he','for','it','with','as',
         'his','on','be','at','by','i','this','had','not','are','but','from','or','have',
         'an','they','which','one','you','were','her','all','she','there','would','their',
@@ -629,12 +717,26 @@
         'since','against','go','came','right','used','take','three','upon','himself',
         'went','every','without','again','shall','say','does','yet','though','got','am',
         'nothing','oh','mr','mrs','miss','sir','dear','ye','thy','thou','thee','s','t'
-      ]);
+      ];
+
+      const LITERARY_STOPWORDS = [...new Set([
+        ...COURSE_STOPWORDS,
+        'madam','lady','lord','thine','thyself','unto','tis','twas','oft','nay','hath'
+      ])];
+
+      const STOPWORD_PRESETS = {
+        course: COURSE_STOPWORDS,
+        core: CORE_STOPWORDS,
+        literary: LITERARY_STOPWORDS
+      };
+
+      const DEFAULT_STOPWORD_PRESET = 'course';
 
       // ============================================================
       // APP STATE
       // ============================================================
       let currentText = '';
+      let activeStopwords = new Set(STOPWORD_PRESETS[DEFAULT_STOPWORD_PRESET]);
 
       // ============================================================
       // INIT
@@ -643,6 +745,7 @@
 
       function init() {
         populateTextSelect();
+        initializeStopwordSettings();
         bindEvents();
       }
 
@@ -665,8 +768,14 @@
         document.getElementById('btn-back-home').addEventListener('click', () => showScreen('home'));
         document.getElementById('btn-kwic').addEventListener('click', runKWIC);
         document.getElementById('btn-dist').addEventListener('click', runDistribution);
-        document.getElementById('stopword-toggle').addEventListener('change', updateFrequency);
+        document.getElementById('stopword-toggle').addEventListener('change', () => {
+          renderStopwordSummary();
+          updateFrequency();
+        });
         document.getElementById('freq-limit').addEventListener('change', updateFrequency);
+        document.getElementById('btn-load-stopword-preset').addEventListener('click', loadSelectedStopwordPreset);
+        document.getElementById('btn-clear-stopwords').addEventListener('click', clearStopwords);
+        document.getElementById('stopword-input').addEventListener('input', syncStopwordsFromInput);
 
         document.querySelectorAll('.tab').forEach((tab) => {
           tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -678,6 +787,12 @@
         document.getElementById('dist-input').addEventListener('keydown', (e) => {
           if (e.key === 'Enter') runDistribution();
         });
+      }
+
+      function initializeStopwordSettings() {
+        document.getElementById('stopword-preset').value = DEFAULT_STOPWORD_PRESET;
+        setStopwordInputValue(STOPWORD_PRESETS[DEFAULT_STOPWORD_PRESET]);
+        syncStopwordsFromInput(false);
       }
 
       // ============================================================
@@ -798,6 +913,60 @@
         return Math.round((total / sentences.length) * 10) / 10;
       }
 
+      function normalizeWord(word) {
+        return word.toLowerCase()
+          .replace(/[^a-z'-]/g, '')
+          .replace(/^[-']+|[-']+$/g, '');
+      }
+
+      function parseStopwordInput(value) {
+        return [...new Set(
+          value
+            .split(/[\s,;]+/)
+            .map(normalizeWord)
+            .filter((word) => word.length > 0)
+        )];
+      }
+
+      function setStopwordInputValue(words) {
+        document.getElementById('stopword-input').value = words.join(', ');
+      }
+
+      function syncStopwordsFromInput(shouldRefresh = true) {
+        activeStopwords = new Set(parseStopwordInput(document.getElementById('stopword-input').value));
+        renderStopwordSummary();
+        if (shouldRefresh) updateFrequency();
+      }
+
+      function renderStopwordSummary() {
+        const summary = document.getElementById('stopword-summary');
+        const count = activeStopwords.size;
+        const preview = Array.from(activeStopwords).slice(0, 6).join(', ');
+        const isEnabled = document.getElementById('stopword-toggle').checked;
+
+        if (!count) {
+          summary.textContent = isEnabled
+            ? '現在の stop words は 0 語です / No active stopwords'
+            : 'ストップワード除去はオフです。現在のリストは 0 語です / Stopword removal is off. Current list: 0 words';
+          return;
+        }
+
+        summary.textContent = isEnabled
+          ? `現在 ${count} 語を除去します / Removing ${count} stopwords. 例: ${preview}${count > 6 ? ', ...' : ''}`
+          : `ストップワード除去はオフです。保存中のリスト: ${count} 語 / Stopword removal is off. Saved list: ${count} words`;
+      }
+
+      function loadSelectedStopwordPreset() {
+        const presetName = document.getElementById('stopword-preset').value;
+        setStopwordInputValue(STOPWORD_PRESETS[presetName] || []);
+        syncStopwordsFromInput();
+      }
+
+      function clearStopwords() {
+        setStopwordInputValue([]);
+        syncStopwordsFromInput();
+      }
+
       // ============================================================
       // FREQUENCY
       // ============================================================
@@ -805,7 +974,7 @@
         const words = tokenize(text);
         const counts = {};
         words.forEach((word) => {
-          if (removeStopwords && STOPWORDS.has(word)) return;
+          if (removeStopwords && activeStopwords.has(word)) return;
           counts[word] = (counts[word] || 0) + 1;
         });
         return Object.entries(counts)
