@@ -9,9 +9,21 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
 
 ## Features / 機能
 
-- **頻出語分析 / Word Frequency** — ストップワード除去あり / with stopword removal
+- **頻出語分析 / Word Frequency** — ストップワード除去あり。サンプル読込と手動編集に対応 / with editable stopword lists
 - **KWIC (Key Word in Context)** — 語の前後文脈を一覧表示 / concordance view
 - **分布グラフ / Distribution** — テキスト全体を20区間に分けて出現位置を可視化 / word occurrence across 20 segments
+
+---
+
+## Customize Stopwords / ストップワードを調整する
+
+分析画面の `Customize Stopwords` を開くと、
+
+- サンプル stopword リストを読み込む
+- 自分で stop words を追加・削除する
+- カンマ・スペース・改行区切りで編集する
+
+ことができます。
 
 ---
 
