@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DH Reading Lab</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero-grid">
+          <div>
+            <h1>DH Reading Lab</h1>
+            <p>How to Go Digital in American Literary Studies / 十九世紀アメリカ文学を少しだけデジタルに読むための授業用アプリ</p>
+          </div>
+          <div class="hero-note">
+            <strong>Course Flow / 授業の流れ</strong><br>
+            Read &rarr; Explore &rarr; Reflect<br>
+            読む &rarr; 試す &rarr; 振り返る
+          </div>
+        </div>
+      </header>
+
+      <!-- Screen 1: Text Selection -->
+      <section id="screen-home" class="screen active">
+        <div class="card">
+          <h2 class="section-title">作品を選ぶ / Select Text</h2>
+          <p class="section-subtitle">今日の作品を選び、問いを確認し、本文を読み込んでから分析を始めます。</p>
+
+          <div class="grid">
+            <div class="stack">
+              <div>
+                <label for="text-select">プリセット作品 / Preset Texts</label>
+                <select id="text-select">
+                  <option value="">-- 選択してください / Choose --</option>
+                </select>
+              </div>
+
+              <div id="core-question" class="info-box" style="display:none;">
+                <strong>今日の問い / Today's Question</strong>
+                <div id="core-question-text"></div>
+              </div>
+
+              <div id="suggested-keywords-box" class="info-box" style="display:none;">
+                <strong>おすすめ検索語 / Suggested Keywords</strong>
+                <p style="font-size:0.82rem;color:var(--muted);margin:0 0 8px;">クリックすると検索欄に自動入力されます / Click to auto-fill search</p>
+                <div id="suggested-keywords" class="chips"></div>
+              </div>
+
+              <div id="text-status" class="info-box status-box">
+                <strong>準備状況 / Ready Status</strong>
+                <div id="text-status-text">作品を選ぶか、本文を貼り付けると分析の準備が始まります / Choose a preset or paste a text to get started.</div>
+              </div>
+
+              <div>
+                <label for="text-input">テキストを貼り付ける / Paste Your Text</label>
+                <textarea id="text-input" placeholder="テキストをここに貼り付けてください / Paste text here..."></textarea>
+                <p class="footnote" style="margin-top:8px;">このブラウザでは、現在の本文・検索語・stop words をこの端末内に自動保存します / This browser saves your current text, searches, and stopwords on this device only.</p>
+              </div>
+
+              <div class="btn-row">
+                <button id="btn-analyze" class="btn-primary" disabled>分析開始 / Start Analysis →</button>
+                <button id="btn-reset-session" type="button" class="btn-secondary">入力を初期化 / Reset Session</button>
+              </div>
+            </div>
+
+            <aside class="stack">
+              <div class="sidebar-card">
+                <h3>使い方 / How To Use</h3>
+                <ul>
+                  <li>作品を選ぶ（または課題テキストを貼り付ける）</li>
+                  <li>分析開始を押して、頻出語を出す</li>
+                  <li>気になる語を1つ選び、KWIC と分布を見る</li>
+                </ul>
+              </div>
+              <div class="sidebar-card">
+                <h3>分析ツール / Tools</h3>
+                <ul>
+                  <li><strong>頻出語</strong>: よく出る語を数え、クリックで KWIC へ送る</li>
+                  <li><strong>KWIC (Key Word in Context)</strong>: 語の前後の文脈を見る</li>
+                  <li><strong>分布</strong>: 語がどこに現れるか見る</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 2: Analysis -->
+      <section id="screen-analysis" class="screen">
+        <div class="card">
+          <div class="btn-row" style="margin-bottom:10px;">
+            <button id="btn-back-home" class="btn-link">&larr; 作品選択に戻る / Back to Text</button>
+          </div>
+
+          <h2 class="section-title">分析 / Analysis</h2>
+          <p class="section-subtitle">数値だけで終わらせず、精読に戻るための手がかりを集めます。</p>
+
+          <div class="stats-bar">
+            <div>総語数 / Words: <strong id="stat-words">0</strong></div>
+            <div>異なり語 / Unique: <strong id="stat-unique">0</strong></div>
+            <div>文数 / Sentences: <strong id="stat-sentences">0</strong></div>
+            <div>平均文長 / Avg length: <strong id="stat-avg-len">0</strong></div>
+          </div>
+
+          <div class="context-stack">
+            <div id="analysis-context" class="info-box" style="display:none;">
+              <strong>現在のテキスト / Current Text</strong>
+              <div id="analysis-context-title"></div>
+              <p id="analysis-context-question" class="note-inline" style="margin-top:6px;display:none;"></p>
+            </div>
+
+            <div id="analysis-keywords-box" class="info-box" style="display:none;">
+              <strong>おすすめ検索語 / Suggested Keywords</strong>
+              <p class="note-inline" style="margin-bottom:8px;">クリックすると KWIC に移動してそのまま検索します / Click a chip to jump to KWIC and search immediately.</p>
+              <div id="analysis-keywords" class="chips"></div>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="freq">頻出語 / Frequent Words</button>
+            <button class="tab" data-tab="kwic">文脈 / KWIC View</button>
+            <button class="tab" data-tab="dist">分布 / Distribution</button>
+          </div>
+
+          <!-- Tab: Frequency -->
+          <div id="tab-freq" class="panel active">
+            <div class="controls">
+              <label class="inline">
+                <input type="checkbox" id="stopword-toggle" checked>
+                <span>ストップワード除去 / Remove Stopwords</span>
+              </label>
+              <label class="inline">
+                <span>表示数 / Show Top</span>
+                <select id="freq-limit">
+                  <option value="20">20</option>
+                  <option value="50" selected>50</option>
+                  <option value="100">100</option>
+                </select>
+              </label>
+            </div>
+            <details class="stopword-panel">
+              <summary>stop words を設定する / Customize Stopwords</summary>
+              <div class="stopword-grid">
+                <div>
+                  <label for="stopword-preset">サンプル / Sample Lists</label>
+                  <div class="stopword-row">
+                    <select id="stopword-preset">
+                      <option value="course">授業用標準 / Course Default</option>
+                      <option value="core">基本英語 / Core English</option>
+                      <option value="literary">19世紀文学 / 19th-Century Literary</option>
+                    </select>
+                    <button id="btn-load-stopword-preset" type="button" class="btn-secondary">読み込む / Load</button>
+                    <button id="btn-clear-stopwords" type="button" class="btn-secondary">空にする / Clear</button>
+                  </div>
+                </div>
+                <div>
+                  <label for="stopword-input">自分の stop words / Custom Stopwords</label>
+                  <textarea
+                    id="stopword-input"
+                    class="stopword-textarea"
+                    placeholder="the, and, of ... または改行区切りで入力 / Enter comma- or line-separated stopwords"
+                  ></textarea>
+                </div>
+                <p class="note-inline">カンマ・スペース・改行区切りで入力できます。サンプルを読み込んでから、必要な語だけ残す使い方を想定しています。</p>
+              </div>
+            </details>
+            <p id="stopword-summary" class="footnote"></p>
+            <p class="action-note">頻出語をクリックすると、その語で KWIC を開きます / Click a frequent word to inspect it in KWIC.</p>
+            <div id="freq-results" class="results"></div>
+          </div>
+
+          <!-- Tab: KWIC -->
+          <div id="tab-kwic" class="panel">
+            <div class="controls">
+              <input type="text" id="kwic-input" placeholder="1語を検索 / Search one word..." style="max-width:260px;">
+              <button id="btn-kwic" class="btn-secondary">検索 / Search</button>
+              <label class="inline">
+                <span>前後語数 / Window</span>
+                <select id="kwic-window">
+                  <option value="3">3</option>
+                  <option value="5" selected>5</option>
+                  <option value="8">8</option>
+                  <option value="10">10</option>
+                </select>
+              </label>
+            </div>
+            <p class="footnote" style="margin-top:0;">KWIC = Key Word in Context. 1語ずつ検索し、その語が前後の文脈の中でどう現れるかを一覧で見ます。</p>
+            <p style="font-size:0.82rem;color:var(--muted);margin:0 0 10px;">おすすめ検索語をクリックすると自動入力されます / Click a keyword chip to auto-fill</p>
+            <div id="kwic-results" class="results"></div>
+          </div>
+
+          <!-- Tab: Distribution -->
+          <div id="tab-dist" class="panel">
+            <div class="controls">
+              <input type="text" id="dist-input" placeholder="1語を検索 / Search one word..." style="max-width:260px;">
+              <button id="btn-dist" class="btn-secondary">表示 / Show</button>
+            </div>
+            <div id="dist-chart" class="results distribution-wrap"></div>
+            <p class="footnote">1語ずつ検索します。テキストを20等分し、各区間での出現回数を表示します / Search one word at a time and compare counts across 20 equal segments.</p>
+          </div>
+
+        </div>
+      </section>
+    </div>
+    <script src="texts/week02.js"></script>
+    <script src="texts/week03.js"></script>
+    <script src="texts/week04.js"></script>
+    <script src="texts.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
