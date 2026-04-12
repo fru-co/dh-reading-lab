@@ -572,7 +572,7 @@
                 <h3>分析ツール / Tools</h3>
                 <ul>
                   <li><strong>頻出語</strong>: よく出る語を数える</li>
-                  <li><strong>KWIC</strong>: 語の前後の文脈を見る</li>
+                  <li><strong>KWIC (Key Word in Context)</strong>: 語の前後の文脈を見る</li>
                   <li><strong>分布</strong>: 語がどこに現れるか見る</li>
                 </ul>
               </div>
@@ -600,7 +600,7 @@
 
           <div class="tabs">
             <button class="tab active" data-tab="freq">頻出語 / Frequent Words</button>
-            <button class="tab" data-tab="kwic">文脈 / KWIC</button>
+            <button class="tab" data-tab="kwic">文脈 / KWIC View</button>
             <button class="tab" data-tab="dist">分布 / Distribution</button>
           </div>
 
@@ -665,6 +665,7 @@
                 </select>
               </label>
             </div>
+            <p class="footnote" style="margin-top:0;">KWIC = Key Word in Context. 検索した語が前後の文脈の中でどう現れるかを一覧で見ます。</p>
             <p style="font-size:0.82rem;color:var(--muted);margin:0 0 10px;">おすすめ検索語をクリックすると自動入力されます / Click a keyword chip to auto-fill</p>
             <div id="kwic-results" class="results"></div>
           </div>
