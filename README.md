@@ -52,7 +52,7 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
 
 ## Add Texts / テキストを追加する
 
-プリセットは、週ごとの問いとおすすめ検索語を持っています。本文が未登録の週は、学生が画面上で本文を貼り付けるか、`texts.js` の各エントリの `text:` フィールドに本文を入れてください。
+プリセットは、週ごとの問いとおすすめ検索語を持っています。現時点では `week02` `week03` `week04` の本文を同梱済みです。本文が未登録の週は、学生が画面上で本文を貼り付けるか、`texts.js` の各エントリの `text:` フィールドに本文を入れてください。
 
 ```javascript
 // texts.js
@@ -65,6 +65,8 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
 ```
 
 授業で完全に「開いたらすぐ使える」状態にしたい場合は、配布予定の本文をあらかじめ `texts.js` に入れておくとスムーズです。
+
+長い本文を入れる場合は、`texts/week05.js` のような別ファイルを追加し、`texts.js` 側では `window.DH_READING_LAB_TEXTS.week05 || ''` のように参照すると管理しやすくなります。
 
 ---
 
