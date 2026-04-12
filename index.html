@@ -366,6 +366,37 @@
         font-size: 0.82rem;
       }
 
+      .context-stack {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .status-box {
+        background: #f8fbfc;
+      }
+
+      .action-note {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .word-link {
+        padding: 0;
+        background: transparent;
+        color: var(--primary-deep);
+        font-weight: 700;
+        text-decoration: underline;
+        text-decoration-color: rgba(45, 90, 116, 0.28);
+      }
+
+      .word-link:hover,
+      .word-link:focus-visible {
+        color: var(--accent);
+        text-decoration-color: rgba(208, 122, 45, 0.42);
+      }
+
       .results {
         min-height: 140px;
       }
@@ -549,13 +580,20 @@
                 <div id="suggested-keywords" class="chips"></div>
               </div>
 
+              <div id="text-status" class="info-box status-box">
+                <strong>準備状況 / Ready Status</strong>
+                <div id="text-status-text">作品を選ぶか、本文を貼り付けると分析の準備が始まります / Choose a preset or paste a text to get started.</div>
+              </div>
+
               <div>
                 <label for="text-input">テキストを貼り付ける / Paste Your Text</label>
                 <textarea id="text-input" placeholder="テキストをここに貼り付けてください / Paste text here..."></textarea>
+                <p class="footnote" style="margin-top:8px;">このブラウザでは、現在の本文・検索語・stop words をこの端末内に自動保存します / This browser saves your current text, searches, and stopwords on this device only.</p>
               </div>
 
               <div class="btn-row">
                 <button id="btn-analyze" class="btn-primary" disabled>分析開始 / Start Analysis →</button>
+                <button id="btn-reset-session" type="button" class="btn-secondary">入力を初期化 / Reset Session</button>
               </div>
             </div>
 
@@ -563,15 +601,15 @@
               <div class="sidebar-card">
                 <h3>使い方 / How To Use</h3>
                 <ul>
-                  <li>作品を選ぶ（またはテキストを貼り付ける）</li>
-                  <li>1つの語を選んで検索する</li>
-                  <li>頻度・文脈・分布を見る</li>
+                  <li>作品を選ぶ（または課題テキストを貼り付ける）</li>
+                  <li>分析開始を押して、頻出語を出す</li>
+                  <li>気になる語を1つ選び、KWIC と分布を見る</li>
                 </ul>
               </div>
               <div class="sidebar-card">
                 <h3>分析ツール / Tools</h3>
                 <ul>
-                  <li><strong>頻出語</strong>: よく出る語を数える</li>
+                  <li><strong>頻出語</strong>: よく出る語を数え、クリックで KWIC へ送る</li>
                   <li><strong>KWIC (Key Word in Context)</strong>: 語の前後の文脈を見る</li>
                   <li><strong>分布</strong>: 語がどこに現れるか見る</li>
                 </ul>
@@ -596,6 +634,20 @@
             <div>異なり語 / Unique: <strong id="stat-unique">0</strong></div>
             <div>文数 / Sentences: <strong id="stat-sentences">0</strong></div>
             <div>平均文長 / Avg length: <strong id="stat-avg-len">0</strong></div>
+          </div>
+
+          <div class="context-stack">
+            <div id="analysis-context" class="info-box" style="display:none;">
+              <strong>現在のテキスト / Current Text</strong>
+              <div id="analysis-context-title"></div>
+              <p id="analysis-context-question" class="note-inline" style="margin-top:6px;display:none;"></p>
+            </div>
+
+            <div id="analysis-keywords-box" class="info-box" style="display:none;">
+              <strong>おすすめ検索語 / Suggested Keywords</strong>
+              <p class="note-inline" style="margin-bottom:8px;">クリックすると KWIC に移動してそのまま検索します / Click a chip to jump to KWIC and search immediately.</p>
+              <div id="analysis-keywords" class="chips"></div>
+            </div>
           </div>
 
           <div class="tabs">
@@ -647,13 +699,14 @@
               </div>
             </details>
             <p id="stopword-summary" class="footnote"></p>
+            <p class="action-note">頻出語をクリックすると、その語で KWIC を開きます / Click a frequent word to inspect it in KWIC.</p>
             <div id="freq-results" class="results"></div>
           </div>
 
           <!-- Tab: KWIC -->
           <div id="tab-kwic" class="panel">
             <div class="controls">
-              <input type="text" id="kwic-input" placeholder="語を検索 / Search word..." style="max-width:260px;">
+              <input type="text" id="kwic-input" placeholder="1語を検索 / Search one word..." style="max-width:260px;">
               <button id="btn-kwic" class="btn-secondary">検索 / Search</button>
               <label class="inline">
                 <span>前後語数 / Window</span>
@@ -665,7 +718,7 @@
                 </select>
               </label>
             </div>
-            <p class="footnote" style="margin-top:0;">KWIC = Key Word in Context. 検索した語が前後の文脈の中でどう現れるかを一覧で見ます。</p>
+            <p class="footnote" style="margin-top:0;">KWIC = Key Word in Context. 1語ずつ検索し、その語が前後の文脈の中でどう現れるかを一覧で見ます。</p>
             <p style="font-size:0.82rem;color:var(--muted);margin:0 0 10px;">おすすめ検索語をクリックすると自動入力されます / Click a keyword chip to auto-fill</p>
             <div id="kwic-results" class="results"></div>
           </div>
@@ -673,11 +726,11 @@
           <!-- Tab: Distribution -->
           <div id="tab-dist" class="panel">
             <div class="controls">
-              <input type="text" id="dist-input" placeholder="語を検索 / Search word..." style="max-width:260px;">
+              <input type="text" id="dist-input" placeholder="1語を検索 / Search one word..." style="max-width:260px;">
               <button id="btn-dist" class="btn-secondary">表示 / Show</button>
             </div>
             <div id="dist-chart" class="results distribution-wrap"></div>
-            <p class="footnote">テキストを20等分し、各区間での出現回数を表示します / Word counts across 20 equal segments</p>
+            <p class="footnote">1語ずつ検索します。テキストを20等分し、各区間での出現回数を表示します / Search one word at a time and compare counts across 20 equal segments.</p>
           </div>
 
         </div>
@@ -731,6 +784,7 @@
       };
 
       const DEFAULT_STOPWORD_PRESET = 'course';
+      const STORAGE_KEY = 'dh-reading-lab-state-v1';
 
       // ============================================================
       // APP STATE
@@ -747,6 +801,9 @@
         populateTextSelect();
         initializeStopwordSettings();
         bindEvents();
+        restoreSessionState();
+        updateSelectedTextUI({ shouldApplyText: false, shouldSave: false });
+        renderSearchPrompts();
       }
 
       function populateTextSelect() {
@@ -754,28 +811,47 @@
         PRESET_TEXTS.forEach((item) => {
           const option = document.createElement('option');
           option.value = item.id;
-          option.textContent = item.week === 1
-            ? `Week ${item.week}: ${item.title}`
-            : `Week ${item.week}: ${item.author} — ${item.title}`;
+          option.textContent = getPresetLabel(item) + (getPresetText(item) ? ' • Ready' : '');
           select.appendChild(option);
         });
       }
 
       function bindEvents() {
-        document.getElementById('text-select').addEventListener('change', onTextSelect);
-        document.getElementById('text-input').addEventListener('input', updateAnalyzeReady);
+        document.getElementById('text-select').addEventListener('change', () => {
+          updateSelectedTextUI();
+          updateAnalyzeReady();
+        });
+        document.getElementById('text-input').addEventListener('input', () => {
+          document.getElementById('text-input').dataset.source = 'user';
+          updateAnalyzeReady();
+          renderTextStatus();
+          saveSessionState();
+        });
         document.getElementById('btn-analyze').addEventListener('click', goToAnalysis);
         document.getElementById('btn-back-home').addEventListener('click', () => showScreen('home'));
+        document.getElementById('btn-reset-session').addEventListener('click', resetSession);
         document.getElementById('btn-kwic').addEventListener('click', runKWIC);
         document.getElementById('btn-dist').addEventListener('click', runDistribution);
         document.getElementById('stopword-toggle').addEventListener('change', () => {
           renderStopwordSummary();
           updateFrequency();
+          saveSessionState();
         });
-        document.getElementById('freq-limit').addEventListener('change', updateFrequency);
+        document.getElementById('freq-limit').addEventListener('change', () => {
+          updateFrequency();
+          saveSessionState();
+        });
+        document.getElementById('stopword-preset').addEventListener('change', saveSessionState);
         document.getElementById('btn-load-stopword-preset').addEventListener('click', loadSelectedStopwordPreset);
         document.getElementById('btn-clear-stopwords').addEventListener('click', clearStopwords);
-        document.getElementById('stopword-input').addEventListener('input', syncStopwordsFromInput);
+        document.getElementById('stopword-input').addEventListener('input', () => {
+          syncStopwordsFromInput();
+          saveSessionState();
+        });
+        document.getElementById('kwic-input').addEventListener('input', saveSessionState);
+        document.getElementById('dist-input').addEventListener('input', saveSessionState);
+        document.getElementById('kwic-window').addEventListener('change', saveSessionState);
+        document.getElementById('freq-results').addEventListener('click', handleFrequencyWordClick);
 
         document.querySelectorAll('.tab').forEach((tab) => {
           tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -793,6 +869,21 @@
         document.getElementById('stopword-preset').value = DEFAULT_STOPWORD_PRESET;
         setStopwordInputValue(STOPWORD_PRESETS[DEFAULT_STOPWORD_PRESET]);
         syncStopwordsFromInput(false);
+      }
+
+      function getSelectedPreset() {
+        const id = document.getElementById('text-select').value;
+        return PRESET_TEXTS.find((item) => item.id === id) || null;
+      }
+
+      function getPresetText(item) {
+        return item ? (item.text || '') : '';
+      }
+
+      function getPresetLabel(item) {
+        return item.week === 1
+          ? `Week ${item.week}: ${item.title}`
+          : `Week ${item.week}: ${item.author} — ${item.title}`;
       }
 
       // ============================================================
@@ -817,9 +908,8 @@
       // ============================================================
       // TEXT SELECTION
       // ============================================================
-      function onTextSelect() {
-        const id = document.getElementById('text-select').value;
-        const selected = PRESET_TEXTS.find((item) => item.id === id);
+      function updateSelectedTextUI({ shouldApplyText = true, shouldSave = true } = {}) {
+        const selected = getSelectedPreset();
         const textarea = document.getElementById('text-input');
 
         const questionBox = document.getElementById('core-question');
@@ -830,42 +920,146 @@
         if (!selected) {
           questionBox.style.display = 'none';
           keywordsBox.style.display = 'none';
-          updateAnalyzeReady();
+          keywordsContainer.innerHTML = '';
+          renderAnalysisContext();
+          renderTextStatus();
+          if (shouldSave) saveSessionState();
           return;
         }
 
-        // Show core question
         if (selected.coreQuestion) {
           questionText.textContent = `${selected.coreQuestion.ja} / ${selected.coreQuestion.en}`;
           questionBox.style.display = 'block';
+        } else {
+          questionBox.style.display = 'none';
         }
 
-        // Build keyword chips
-        keywordsContainer.innerHTML = '';
-        (selected.suggestedKeywords || []).forEach((keyword) => {
+        renderKeywordChips(keywordsContainer, selected.suggestedKeywords || [], (keyword) => {
+          setSearchWord(keyword, false);
+        });
+        keywordsBox.style.display = keywordsContainer.children.length ? 'block' : 'none';
+
+        if (shouldApplyText) {
+          const presetText = getPresetText(selected);
+          if (presetText) {
+            textarea.value = presetText;
+            textarea.dataset.source = 'preset';
+          } else if (textarea.dataset.source === 'preset') {
+            textarea.value = '';
+            textarea.dataset.source = '';
+          }
+        }
+
+        renderAnalysisContext();
+        renderTextStatus();
+        if (shouldSave) saveSessionState();
+      }
+
+      function renderKeywordChips(container, keywords, onClick) {
+        container.innerHTML = '';
+        keywords.forEach((keyword) => {
           const chip = document.createElement('button');
           chip.type = 'button';
           chip.className = 'chip';
           chip.textContent = keyword;
-          chip.addEventListener('click', () => {
-            document.getElementById('kwic-input').value = keyword;
-            document.getElementById('dist-input').value = keyword;
-          });
-          keywordsContainer.appendChild(chip);
+          chip.addEventListener('click', () => onClick(keyword));
+          container.appendChild(chip);
         });
-        keywordsBox.style.display = keywordsContainer.children.length ? 'block' : 'none';
-
-        // Auto-fill text if preset has content
-        if (selected.text) {
-          textarea.value = selected.text;
-        }
-
-        updateAnalyzeReady();
       }
 
       function updateAnalyzeReady() {
         const text = document.getElementById('text-input').value.trim();
         document.getElementById('btn-analyze').disabled = text.length < 20;
+      }
+
+      function renderTextStatus() {
+        const selected = getSelectedPreset();
+        const text = document.getElementById('text-input').value.trim();
+        const statusText = document.getElementById('text-status-text');
+        const builtInText = getPresetText(selected);
+
+        if (!selected && !text) {
+          statusText.textContent = '作品を選ぶか、本文を貼り付けると分析の準備が始まります / Choose a preset or paste a text to get started.';
+          return;
+        }
+
+        if (selected && !text) {
+          statusText.textContent = builtInText
+            ? `${getPresetLabel(selected)} の本文は読み込み済みです。分析開始を押すとすぐに見られます / ${getPresetLabel(selected)} is ready in the app.`
+            : `${getPresetLabel(selected)} の問いとおすすめ語を表示しています。分析するには課題テキストを下に貼り付けてください / This preset gives you the question and keywords. Paste the assigned text below to analyze it.`;
+          return;
+        }
+
+        const wordCount = getWordCount(text).toLocaleString();
+        if (selected && builtInText && text === builtInText.trim()) {
+          statusText.textContent = `${getPresetLabel(selected)} を読み込みました。${wordCount} 語の本文を分析できます / ${getPresetLabel(selected)} is loaded and ready to analyze (${wordCount} words).`;
+          return;
+        }
+
+        if (selected) {
+          statusText.textContent = `${getPresetLabel(selected)} の問いを使いながら、貼り付けた本文を分析できます / Your pasted text is ready to analyze with the ${getPresetLabel(selected)} prompt.`;
+          return;
+        }
+
+        statusText.textContent = `貼り付けた本文を分析できます。現在 ${wordCount} 語です / Your pasted text is ready to analyze (${wordCount} words).`;
+      }
+
+      function renderAnalysisContext() {
+        const selected = getSelectedPreset();
+        const sourceText = currentText || document.getElementById('text-input').value.trim();
+        const contextBox = document.getElementById('analysis-context');
+        const contextTitle = document.getElementById('analysis-context-title');
+        const contextQuestion = document.getElementById('analysis-context-question');
+        const keywordsBox = document.getElementById('analysis-keywords-box');
+        const keywordsContainer = document.getElementById('analysis-keywords');
+
+        if (!selected && !sourceText) {
+          contextBox.style.display = 'none';
+          keywordsBox.style.display = 'none';
+          keywordsContainer.innerHTML = '';
+          return;
+        }
+
+        contextBox.style.display = 'block';
+        contextTitle.textContent = selected
+          ? getPresetLabel(selected)
+          : '貼り付けたテキスト / Pasted Text';
+
+        if (selected && selected.coreQuestion) {
+          contextQuestion.textContent = `${selected.coreQuestion.ja} / ${selected.coreQuestion.en}`;
+          contextQuestion.style.display = 'block';
+        } else if (sourceText) {
+          contextQuestion.textContent = `${getWordCount(sourceText).toLocaleString()} words ready to inspect`;
+          contextQuestion.style.display = 'block';
+        } else {
+          contextQuestion.style.display = 'none';
+        }
+
+        renderKeywordChips(keywordsContainer, selected ? (selected.suggestedKeywords || []) : [], (keyword) => {
+          setSearchWord(keyword, true);
+        });
+        keywordsBox.style.display = keywordsContainer.children.length ? 'block' : 'none';
+      }
+
+      function setSearchWord(keyword, shouldRun) {
+        document.getElementById('kwic-input').value = keyword;
+        document.getElementById('dist-input').value = keyword;
+        saveSessionState();
+
+        if (shouldRun) {
+          switchTab('kwic');
+          runKWIC();
+        }
+      }
+
+      function renderSearchPrompts() {
+        const hasText = Boolean(currentText);
+        document.getElementById('kwic-results').innerHTML = hasText
+          ? '<p class="empty-state">頻出語またはおすすめ検索語から 1 語選んでください / Choose one word from the frequent-word list or keyword chips.</p>'
+          : '<p class="empty-state">先に本文を読み込み、分析開始を押してください / Load a text first, then start the analysis.</p>';
+        document.getElementById('dist-chart').innerHTML = hasText
+          ? '<p class="empty-state">1語を入れると、テキストのどこに集中しているかを表示します / Enter one word to see where it clusters in the text.</p>'
+          : '<p class="empty-state">先に本文を読み込み、分析開始を押してください / Load a text first, then start the analysis.</p>';
       }
 
       // ============================================================
@@ -880,15 +1074,23 @@
         document.getElementById('stat-sentences').textContent = getSentenceCount(currentText).toLocaleString();
         document.getElementById('stat-avg-len').textContent = getAvgSentenceLength(currentText);
 
+        renderAnalysisContext();
+        renderSearchPrompts();
+        switchTab('freq');
         updateFrequency();
         showScreen('analysis');
+        saveSessionState();
       }
 
       // ============================================================
       // TEXT PROCESSING
       // ============================================================
+      function normalizeQuotes(text) {
+        return text.replace(/[’]/g, '\'');
+      }
+
       function tokenize(text) {
-        return text.toLowerCase()
+        return normalizeQuotes(text).toLowerCase()
           .replace(/[^a-z'\s-]/g, ' ')
           .split(/\s+/)
           .filter((word) => word.length > 1);
@@ -914,9 +1116,26 @@
       }
 
       function normalizeWord(word) {
-        return word.toLowerCase()
+        return normalizeQuotes(word).toLowerCase()
           .replace(/[^a-z'-]/g, '')
           .replace(/^[-']+|[-']+$/g, '');
+      }
+
+      function parseSingleSearchTerm(value) {
+        const terms = value
+          .split(/[\s,;]+/)
+          .map(normalizeWord)
+          .filter((word) => word.length > 0);
+
+        if (!terms.length) {
+          return { term: '', error: 'empty' };
+        }
+
+        if (terms.length > 1) {
+          return { term: '', error: 'multiple' };
+        }
+
+        return { term: terms[0], error: '' };
       }
 
       function parseStopwordInput(value) {
@@ -960,11 +1179,13 @@
         const presetName = document.getElementById('stopword-preset').value;
         setStopwordInputValue(STOPWORD_PRESETS[presetName] || []);
         syncStopwordsFromInput();
+        saveSessionState();
       }
 
       function clearStopwords() {
         setStopwordInputValue([]);
         syncStopwordsFromInput();
+        saveSessionState();
       }
 
       // ============================================================
@@ -985,11 +1206,19 @@
       function updateFrequency() {
         const removeStopwords = document.getElementById('stopword-toggle').checked;
         const limit = Number(document.getElementById('freq-limit').value);
-        const rows = getFrequencies(currentText, removeStopwords).slice(0, limit);
         const container = document.getElementById('freq-results');
 
+        if (!currentText) {
+          container.innerHTML = '<p class="empty-state">本文を読み込むと頻出語が表示されます / Frequent words appear once a text is loaded.</p>';
+          return;
+        }
+
+        const rows = getFrequencies(currentText, removeStopwords).slice(0, limit);
+
         if (!rows.length) {
-          container.innerHTML = '<p class="empty-state">語が見つかりません / No words found</p>';
+          container.innerHTML = removeStopwords
+            ? '<p class="empty-state">表示できる語がありません。stop words を減らすか、除去をオフにしてみてください / No words remain. Try reducing the stopwords or turning stopword removal off.</p>'
+            : '<p class="empty-state">語が見つかりません / No words found.</p>';
           return;
         }
 
@@ -999,7 +1228,7 @@
           const width = Math.round((row.count / max) * 100);
           html += `<tr>
             <td>${i + 1}</td>
-            <td><strong>${escapeHtml(row.word)}</strong></td>
+            <td><button type="button" class="word-link" data-word="${escapeHtml(row.word)}">${escapeHtml(row.word)}</button></td>
             <td>${row.count}</td>
             <td style="width:120px"><div class="freq-bar" style="width:${width}%"></div></td>
           </tr>`;
@@ -1012,13 +1241,13 @@
       // KWIC
       // ============================================================
       function kwicSearch(text, keyword, windowSize) {
-        const target = keyword.toLowerCase().trim();
+        const target = normalizeWord(keyword);
         if (!target) return [];
         const rawWords = text.split(/\s+/);
-        const normalized = rawWords.map((w) => w.toLowerCase().replace(/[^a-z'-]/g, ''));
+        const normalized = rawWords.map((w) => normalizeWord(w));
         const results = [];
         normalized.forEach((word, i) => {
-          if (word === target || word.replace(/[^a-z]/g, '') === target) {
+          if (word === target) {
             results.push({
               left: rawWords.slice(Math.max(0, i - windowSize), i).join(' '),
               match: rawWords[i],
@@ -1033,19 +1262,30 @@
         const keyword = document.getElementById('kwic-input').value.trim();
         const windowSize = Number(document.getElementById('kwic-window').value);
         const container = document.getElementById('kwic-results');
+        const parsed = parseSingleSearchTerm(keyword);
 
-        if (!keyword) {
+        if (!currentText) {
+          container.innerHTML = '<p class="empty-state">先に本文を読み込み、分析開始を押してください / Load a text first, then start the analysis.</p>';
+          return;
+        }
+
+        if (parsed.error === 'empty') {
           container.innerHTML = '<p class="empty-state">検索語を入力してください / Enter a word to search</p>';
           return;
         }
 
-        const results = kwicSearch(currentText, keyword, windowSize);
-        if (!results.length) {
-          container.innerHTML = `<p class="empty-state">"${escapeHtml(keyword)}" は見つかりませんでした / not found</p>`;
+        if (parsed.error === 'multiple') {
+          container.innerHTML = '<p class="empty-state">1語ずつ検索してください / Search one word at a time</p>';
           return;
         }
 
-        let html = `<p><strong>"${escapeHtml(keyword)}"</strong> : ${results.length} 件 / occurrences</p>
+        const results = kwicSearch(currentText, parsed.term, windowSize);
+        if (!results.length) {
+          container.innerHTML = `<p class="empty-state">"${escapeHtml(parsed.term)}" は見つかりませんでした / not found</p>`;
+          return;
+        }
+
+        let html = `<p><strong>"${escapeHtml(parsed.term)}"</strong> : ${results.length} 件 / occurrences</p>
           <table class="kwic-table"><tbody>`;
         results.forEach((item) => {
           html += `<tr>
@@ -1062,7 +1302,7 @@
       // DISTRIBUTION
       // ============================================================
       function getDistribution(text, keyword, segments) {
-        const target = keyword.toLowerCase().trim();
+        const target = normalizeWord(keyword);
         const words = tokenize(text);
         const dist = new Array(segments).fill(0);
         const segmentSize = Math.ceil(words.length / segments);
@@ -1078,22 +1318,33 @@
       function runDistribution() {
         const keyword = document.getElementById('dist-input').value.trim();
         const container = document.getElementById('dist-chart');
+        const parsed = parseSingleSearchTerm(keyword);
 
-        if (!keyword) {
+        if (!currentText) {
+          container.innerHTML = '<p class="empty-state">先に本文を読み込み、分析開始を押してください / Load a text first, then start the analysis.</p>';
+          return;
+        }
+
+        if (parsed.error === 'empty') {
           container.innerHTML = '<p class="empty-state">検索語を入力してください / Enter a word to search</p>';
           return;
         }
 
-        const dist = getDistribution(currentText, keyword, 20);
+        if (parsed.error === 'multiple') {
+          container.innerHTML = '<p class="empty-state">1語ずつ検索してください / Search one word at a time</p>';
+          return;
+        }
+
+        const dist = getDistribution(currentText, parsed.term, 20);
         const total = dist.reduce((sum, n) => sum + n, 0);
 
         if (!total) {
-          container.innerHTML = `<p class="empty-state">"${escapeHtml(keyword)}" は見つかりませんでした / not found</p>`;
+          container.innerHTML = `<p class="empty-state">"${escapeHtml(parsed.term)}" は見つかりませんでした / not found</p>`;
           return;
         }
 
         const max = Math.max(...dist, 1);
-        let html = `<p><strong>"${escapeHtml(keyword)}"</strong> &nbsp; 合計 / total: <strong>${total}</strong> 回</p>
+        let html = `<p><strong>"${escapeHtml(parsed.term)}"</strong> &nbsp; 合計 / total: <strong>${total}</strong> 回</p>
           <div class="dist-container">`;
         dist.forEach((count, i) => {
           const height = Math.max((count / max) * 100, 2);
@@ -1111,6 +1362,122 @@
       // ============================================================
       // UTILITIES
       // ============================================================
+      function handleFrequencyWordClick(event) {
+        const button = event.target.closest('[data-word]');
+        if (!button) return;
+        setSearchWord(button.dataset.word, true);
+      }
+
+      function getSessionState() {
+        return {
+          selectedTextId: document.getElementById('text-select').value,
+          textInput: document.getElementById('text-input').value,
+          stopwordToggle: document.getElementById('stopword-toggle').checked,
+          stopwordPreset: document.getElementById('stopword-preset').value,
+          stopwordInput: document.getElementById('stopword-input').value,
+          freqLimit: document.getElementById('freq-limit').value,
+          kwicInput: document.getElementById('kwic-input').value,
+          kwicWindow: document.getElementById('kwic-window').value,
+          distInput: document.getElementById('dist-input').value
+        };
+      }
+
+      function saveSessionState() {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(getSessionState()));
+        } catch (error) {
+          // Ignore storage failures so the app still works in restricted browsers.
+        }
+      }
+
+      function restoreSessionState() {
+        let state = null;
+
+        try {
+          state = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
+        } catch (error) {
+          state = null;
+        }
+
+        if (!state) {
+          return;
+        }
+
+        if (typeof state.selectedTextId === 'string') {
+          document.getElementById('text-select').value = state.selectedTextId;
+        }
+
+        if (typeof state.textInput === 'string') {
+          document.getElementById('text-input').value = state.textInput;
+          document.getElementById('text-input').dataset.source = state.textInput === getPresetText(getSelectedPreset()) && state.textInput
+            ? 'preset'
+            : 'user';
+        } else if (getPresetText(getSelectedPreset())) {
+          document.getElementById('text-input').value = getPresetText(getSelectedPreset());
+          document.getElementById('text-input').dataset.source = 'preset';
+        }
+
+        if (state.stopwordToggle === false) {
+          document.getElementById('stopword-toggle').checked = false;
+        }
+
+        if (typeof state.stopwordPreset === 'string' && STOPWORD_PRESETS[state.stopwordPreset]) {
+          document.getElementById('stopword-preset').value = state.stopwordPreset;
+        }
+
+        if (typeof state.stopwordInput === 'string') {
+          document.getElementById('stopword-input').value = state.stopwordInput;
+        }
+
+        if (['20', '50', '100'].includes(String(state.freqLimit))) {
+          document.getElementById('freq-limit').value = String(state.freqLimit);
+        }
+
+        if (['3', '5', '8', '10'].includes(String(state.kwicWindow))) {
+          document.getElementById('kwic-window').value = String(state.kwicWindow);
+        }
+
+        if (typeof state.kwicInput === 'string') {
+          document.getElementById('kwic-input').value = state.kwicInput;
+        }
+
+        if (typeof state.distInput === 'string') {
+          document.getElementById('dist-input').value = state.distInput;
+        }
+
+        syncStopwordsFromInput(false);
+      }
+
+      function resetSession() {
+        const confirmed = window.confirm('保存中の本文・検索語・stop words をこのブラウザから消しますか？ / Reset the saved text, searches, and stopwords in this browser?');
+        if (!confirmed) return;
+
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+          // Ignore storage failures and still reset the visible form.
+        }
+
+        currentText = '';
+        document.getElementById('text-select').value = '';
+        document.getElementById('text-input').value = '';
+        document.getElementById('text-input').dataset.source = '';
+        document.getElementById('kwic-input').value = '';
+        document.getElementById('dist-input').value = '';
+        document.getElementById('kwic-window').value = '5';
+        document.getElementById('freq-limit').value = '50';
+        document.getElementById('stopword-toggle').checked = true;
+
+        initializeStopwordSettings();
+        updateSelectedTextUI({ shouldApplyText: false, shouldSave: false });
+        renderTextStatus();
+        renderAnalysisContext();
+        renderSearchPrompts();
+        updateFrequency();
+        updateAnalyzeReady();
+        showScreen('home');
+      }
+
       function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;

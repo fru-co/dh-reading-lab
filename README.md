@@ -3,7 +3,7 @@
 **How to Go Digital in American Literary Studies**
 十九世紀アメリカ文学を少しだけデジタルに読むための授業用アプリ
 
-A lightweight, browser-based text analysis tool for introductory digital humanities courses. No installation, no coding, no server required — students open the URL and start analyzing immediately.
+A lightweight, browser-based text analysis tool for introductory digital humanities courses. No installation, no coding, no server required — students open the URL, choose a preset or paste a text, and start analyzing immediately.
 
 ---
 
@@ -27,6 +27,20 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
 
 ---
 
+## Student Quick Start / 学生向けクイックスタート
+
+1. 作品を選ぶか、課題テキストを貼り付ける
+2. `分析開始 / Start Analysis` を押す
+3. 頻出語から気になる語をクリックする
+4. `KWIC (Key Word in Context)` と `Distribution` で文脈と位置を確かめる
+
+メモ:
+
+- 現在の本文、検索語、stop words は同じブラウザ内に自動保存されます
+- 最初からやり直したいときは `Reset Session` を使います
+
+---
+
 ## Deploy to GitHub Pages / デプロイ方法
 
 1. このリポジトリを Fork する / Fork this repository
@@ -38,7 +52,7 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
 
 ## Add Texts / テキストを追加する
 
-`texts.js` の各エントリの `text:` フィールドに本文を貼り付けてください。
+プリセットは、週ごとの問いとおすすめ検索語を持っています。本文が未登録の週は、学生が画面上で本文を貼り付けるか、`texts.js` の各エントリの `text:` フィールドに本文を入れてください。
 
 ```javascript
 // texts.js
@@ -49,6 +63,8 @@ A lightweight, browser-based text analysis tool for introductory digital humanit
   text: 'PASTE FULL TEXT HERE'  // ← ここに本文を貼り付ける
 }
 ```
+
+授業で完全に「開いたらすぐ使える」状態にしたい場合は、配布予定の本文をあらかじめ `texts.js` に入れておくとスムーズです。
 
 ---
 
